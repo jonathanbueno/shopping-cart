@@ -49,13 +49,16 @@ export function CartProvider({ children }: CartProviderProps): JSX.Element {
 
       setCart([...cart, data]);
     } catch {
-      toast.error('Quantidade solicitada fora de estoque');
+      toast.error('Erro na adição do produto');
     }
   };
 
-  const removeProduct = (productId: number) => {
+  const removeProduct = async (productId: number) => {
     try {
-      // TODO
+      await api.get(`stock/${productId}`);
+      const filterProduct = cart.filter((product) => productId !== product.id);
+
+      setCart(filterProduct);
     } catch {
       toast.error('Erro na remoção do produto');
     }
@@ -66,7 +69,7 @@ export function CartProvider({ children }: CartProviderProps): JSX.Element {
     amount,
   }: UpdateProductAmount) => {
     try {
-      // TODO
+      //
     } catch {
       // TODO
     }
