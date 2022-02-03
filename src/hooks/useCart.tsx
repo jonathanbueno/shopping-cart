@@ -20,6 +20,7 @@ interface UpdateProductAmount {
 
 interface CartContextData {
   cart: Product[];
+  setCart: (cart: Product[]) => void;
   addProduct: (productId: number) => Promise<void>;
   removeProduct: (productId: number) => void;
   updateProductAmount: ({ productId, amount }: UpdateProductAmount) => void;
@@ -47,13 +48,14 @@ export function CartProvider({ children }: CartProviderProps): JSX.Element {
       await api.get(`stock/${productId}`);
       const { data } = await api.get(`products/${productId}`);
 
-      setCart([
-        ...cart,
-        {
-          ...data,
-          amount: 1,
-        },
-      ]);
+      if (cart.length > 0) {
+        cart.map((product) => {
+          if (product.id === productId)
+            updateProductAmount({ productId, amount: product.amount });
+
+          return product;
+        });
+      } else setCart([...cart, { ...data, amount: 1 }]);
     } catch {
       toast.error('Erro na adição do produto');
     }
@@ -75,7 +77,19 @@ export function CartProvider({ children }: CartProviderProps): JSX.Element {
     amount,
   }: UpdateProductAmount) => {
     try {
-      //
+      const cartCopy = [...cart];
+
+      cartCopy.map((e, i) => {
+        if (e.id === productId)
+          cartCopy[i] = {
+            ...e,
+            amount: amount + 1,
+          };
+
+        return e;
+      });
+
+      setCart(cartCopy);
     } catch {
       // TODO
     }
@@ -83,7 +97,7 @@ export function CartProvider({ children }: CartProviderProps): JSX.Element {
 
   return (
     <CartContext.Provider
-      value={{ cart, addProduct, removeProduct, updateProductAmount }}
+      value={{ cart, setCart, addProduct, removeProduct, updateProductAmount }}
     >
       {children}
     </CartContext.Provider>

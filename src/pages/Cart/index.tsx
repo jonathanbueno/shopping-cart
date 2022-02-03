@@ -18,7 +18,7 @@ interface Product {
 }
 
 const Cart = (): JSX.Element => {
-  const { cart, removeProduct, updateProductAmount } = useCart();
+  const { cart, setCart, removeProduct, updateProductAmount } = useCart();
 
   const cartFormatted = cart.map((product) => ({
     ...product,
@@ -31,14 +31,36 @@ const Cart = (): JSX.Element => {
   //   }, 0)
   // );
 
-  console.log(cart);
-
   function handleProductIncrement(product: Product) {
-    // TODO
+    const cartCopy = [...cart];
+
+    cartCopy.map((e, i) => {
+      if (e.id === product.id)
+        cartCopy[i] = {
+          ...e,
+          amount: (product.amount += 1),
+        };
+
+      return e;
+    });
+
+    setCart(cartCopy);
   }
 
   function handleProductDecrement(product: Product) {
-    // TODO
+    const cartCopy = [...cart];
+
+    cartCopy.map((e, i) => {
+      if (e.id === product.id)
+        return (cartCopy[i] = {
+          ...e,
+          amount: (product.amount -= 1),
+        });
+
+      return e;
+    });
+
+    setCart(cartCopy);
   }
 
   function handleRemoveProduct(productId: number) {
@@ -65,15 +87,15 @@ const Cart = (): JSX.Element => {
               </td>
               <td>
                 <strong>{product.title}</strong>
-                <span>R$ 179,90</span>
+                <span>{product.price}</span>
               </td>
               <td>
                 <div>
                   <button
                     type='button'
                     data-testid='decrement-product'
-                    // disabled={product.amount <= 1}
-                    // onClick={() => handleProductDecrement()}
+                    disabled={product.amount <= 1}
+                    onClick={() => handleProductDecrement(product)}
                   >
                     <MdRemoveCircleOutline size={20} />
                   </button>
@@ -86,7 +108,7 @@ const Cart = (): JSX.Element => {
                   <button
                     type='button'
                     data-testid='increment-product'
-                    // onClick={() => handleProductIncrement()}
+                    onClick={() => handleProductIncrement(product)}
                   >
                     <MdAddCircleOutline size={20} />
                   </button>
