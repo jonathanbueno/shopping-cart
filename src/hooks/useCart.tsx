@@ -88,7 +88,7 @@ export function CartProvider({ children }: CartProviderProps): JSX.Element {
         if (e.id === productId)
           cartCopy[i] = {
             ...e,
-            amount: amount + 1,
+            amount,
           };
 
         return e;
@@ -96,7 +96,7 @@ export function CartProvider({ children }: CartProviderProps): JSX.Element {
 
       setCart(cartCopy);
     } catch {
-      // TODO
+      toast.error('Erro na alteração de quantidade do produto');
     }
   };
 

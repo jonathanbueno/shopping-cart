@@ -35,35 +35,21 @@ const Cart = (): JSX.Element => {
   );
 
   function handleProductIncrement(product: Product) {
-    const cartCopy = [...cart];
+    const incrementAmount = product.amount + 1;
 
-    cartCopy.map((e, i) => {
-      if (e.id === product.id)
-        cartCopy[i] = {
-          ...e,
-          amount: (product.amount += 1),
-        };
-
-      return e;
+    updateProductAmount({
+      productId: product.id,
+      amount: incrementAmount,
     });
-
-    setCart(cartCopy);
   }
 
   function handleProductDecrement(product: Product) {
-    const cartCopy = [...cart];
+    const decrementAmount = product.amount - 1;
 
-    cartCopy.map((e, i) => {
-      if (e.id === product.id)
-        return (cartCopy[i] = {
-          ...e,
-          amount: (product.amount -= 1),
-        });
-
-      return e;
+    updateProductAmount({
+      productId: product.id,
+      amount: decrementAmount,
     });
-
-    setCart(cartCopy);
   }
 
   function handleRemoveProduct(productId: number) {
