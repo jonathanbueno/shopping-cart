@@ -205,7 +205,7 @@ describe('useCart Hook', () => {
     );
   });
 
-  it.only('should not be able to increase a product amount when running out of stock', async () => {
+  it('should not be able to increase a product amount when running out of stock', async () => {
     const productId = 2;
 
     apiMock.onGet(`stock/${productId}`).reply(200, {
