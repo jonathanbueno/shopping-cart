@@ -205,7 +205,7 @@ describe('useCart Hook', () => {
     );
   });
 
-  it('should not be able to increase a product amount when running out of stock', async () => {
+  it.only('should not be able to increase a product amount when running out of stock', async () => {
     const productId = 2;
 
     apiMock.onGet(`stock/${productId}`).reply(200, {
@@ -214,9 +214,10 @@ describe('useCart Hook', () => {
     });
     apiMock.onGet(`products/${productId}`).reply(200, {
       id: 2,
-      title: "Tênis VR Caminhada Confortável Detalhes Couro Masculino",
+      title: 'Tênis VR Caminhada Confortável Detalhes Couro Masculino',
       price: 139.9,
-      image: "https://rocketseat-cdn.s3-sa-east-1.amazonaws.com/modulo-redux/tenis2.jpg"
+      image:
+        'https://rocketseat-cdn.s3-sa-east-1.amazonaws.com/modulo-redux/tenis2.jpg',
     });
 
     const { result, waitFor } = renderHook(useCart, {

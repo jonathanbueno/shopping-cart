@@ -20,7 +20,6 @@ interface UpdateProductAmount {
 
 interface CartContextData {
   cart: Product[];
-  setCart: (cart: Product[]) => void;
   addProduct: (productId: number) => Promise<void>;
   removeProduct: (productId: number) => void;
   updateProductAmount: ({ productId, amount }: UpdateProductAmount) => void;
@@ -39,25 +38,37 @@ export function CartProvider({ children }: CartProviderProps): JSX.Element {
     return [];
   });
 
-  useEffect(() => {
-    localStorage.setItem('@RocketShoes:cart', JSON.stringify(cart));
-  }, [cart]);
+  const checkStock = async ({ id, amount }: Stock) => {
+    try {
+      const { data } = await api.get(`stock/${id}`);
+
+      if (amount > data.amount) throw new Error();
+    } catch {
+      toast.error('Quantidade solicitada fora de estoque');
+    }
+  };
 
   const addProduct = async (productId: number) => {
     try {
+      const copyCart = [...cart];
       await api.get(`stock/${productId}`);
+
       const { data } = await api.get(`products/${productId}`);
 
       const isNewProductAdded =
-        cart.filter((product) => product.id === productId).length === 0;
+        copyCart.filter((product) => product.id === productId).length === 0;
 
       if (isNewProductAdded) {
-        return setCart([...cart, { ...data, amount: 1 }]);
+        copyCart.push({ ...data, amount: 1 });
+        setCart(copyCart);
+        localStorage.setItem('@RocketShoes:cart', JSON.stringify(copyCart));
+        return;
       }
 
-      cart.map((product) => {
-        if (product.id === productId)
-          updateProductAmount({ productId, amount: product.amount });
+      copyCart.map((product) => {
+        if (product.id === productId) {
+          updateProductAmount({ productId, amount: product.amount + 1 });
+        }
 
         return product;
       });
@@ -68,10 +79,17 @@ export function CartProvider({ children }: CartProviderProps): JSX.Element {
 
   const removeProduct = async (productId: number) => {
     try {
-      await api.get(`stock/${productId}`);
-      const filterProduct = cart.filter((product) => productId !== product.id);
+      const copyCart = [...cart];
 
-      setCart(filterProduct);
+      const findProductIndex = copyCart.findIndex(
+        (product) => productId === product.id
+      );
+
+      if (findProductIndex >= 0) {
+        copyCart.splice(findProductIndex, 1);
+        setCart(copyCart);
+        localStorage.setItem('@RocketShoes:cart', JSON.stringify(copyCart));
+      } else throw Error();
     } catch {
       toast.error('Erro na remoção do produto');
     }
@@ -82,6 +100,12 @@ export function CartProvider({ children }: CartProviderProps): JSX.Element {
     amount,
   }: UpdateProductAmount) => {
     try {
+      await checkStock({
+        id: productId,
+        amount,
+      });
+      await api.get(`products/${productId}`);
+
       const cartCopy = [...cart];
 
       cartCopy.map((e, i) => {
@@ -95,6 +119,7 @@ export function CartProvider({ children }: CartProviderProps): JSX.Element {
       });
 
       setCart(cartCopy);
+      localStorage.setItem('@RocketShoes:cart', JSON.stringify(cartCopy));
     } catch {
       toast.error('Erro na alteração de quantidade do produto');
     }
@@ -102,7 +127,7 @@ export function CartProvider({ children }: CartProviderProps): JSX.Element {
 
   return (
     <CartContext.Provider
-      value={{ cart, setCart, addProduct, removeProduct, updateProductAmount }}
+      value={{ cart, addProduct, removeProduct, updateProductAmount }}
     >
       {children}
     </CartContext.Provider>
